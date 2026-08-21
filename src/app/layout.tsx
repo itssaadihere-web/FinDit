@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'FinDit | AI-Powered Financial Audit System',
-  description: 'Multi-agent financial audit decision-support engine with mandatory CA sign-off gating.',
+  title: 'FinDit | Statutory Financial Audit Platform',
+  description: 'Statutory audit fieldwork and decision-support platform with mandatory CA sign-off gating.',
 };
 
 export default function RootLayout({
@@ -22,16 +22,16 @@ export default function RootLayout({
               </div>
               <div>
                 <h1 className="font-bold text-lg leading-tight flex items-center gap-2">
-                  FinDit <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-400/30">v1.0 Statutory Audit</span>
+                  FinDit <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded border border-blue-400/30">Statutory Audit Platform</span>
                 </h1>
-                <p className="text-xs text-slate-400">AI Fieldwork Engine • Human CA Sign-Off Mandatory</p>
+                <p className="text-xs text-slate-400">ISA & IFRS Fieldwork System • Licensed CA Authority Mandatory</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 text-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span className="text-slate-300 font-medium">CA Authority Active</span>
+                <span className="text-slate-300 font-medium">CA Sign-Off Authority</span>
                 <span className="text-slate-500">|</span>
                 <span className="text-blue-400">ID: CA-99412</span>
               </div>
@@ -46,7 +46,7 @@ export default function RootLayout({
         <footer className="bg-slate-900 text-slate-400 border-t border-slate-800 py-4 mt-12 text-center text-xs">
           <div className="max-w-7xl mx-auto px-4">
             <p className="font-medium text-amber-400/90">
-              ⚠️ MANDATORY REGULATORY NOTICE: FinDit is an AI decision-support and fieldwork automation engine. All generated reports carry <span className="underline">AI_DRAFT</span> status until formally approved and signed in-system by a licensed Chartered Accountant.
+              ⚠️ STATUTORY REGULATORY NOTICE: FinDit is an audit decision-support and fieldwork automation system. All audit working papers carry <span className="underline">AI_DRAFT</span> status until formally reviewed, approved, and digitally signed in-system by a licensed Chartered Accountant.
             </p>
             <p className="mt-1 text-slate-500">
               Compliant with ISA 300, ISA 315, ISA 320, ISA 240, ISA 500, ISA 505, ISA 520, ISA 570, ISA 701 & IFRS Standards.

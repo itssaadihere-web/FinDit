@@ -32,9 +32,28 @@ import {
   Plus,
   Search,
   ArrowLeft,
-  Briefcase,
-  AlertCircle
+  Briefcase
 } from 'lucide-react';
+
+// CA Terminology Mapping for Audit Trail Task Types
+const PROCEDURE_TITLE_MAP: Record<string, { title: string; engine: string }> = {
+  JUDGMENT_STANDARDS_RISK: {
+    title: 'Standards & Risk Judgment (ISA 300 / 315 / 320)',
+    engine: 'Professional Judgment & Risk Assessment Module'
+  },
+  BULK_NUMERIC_ANALYTICS: {
+    title: 'Substantive & Analytical Analytics (ISA 520)',
+    engine: 'Bulk Financial & Trend Analysis Module'
+  },
+  FAST_TRIAGE_CLASSIFICATION: {
+    title: 'Document Triage & Record Verification',
+    engine: 'PBC Document Classification Module'
+  },
+  FINAL_REPORT_SYNTHESIS: {
+    title: 'Statutory Reporting & Synthesis (ISA 701)',
+    engine: 'Final Opinion & Management Letter Module'
+  }
+};
 
 export default function AuditFirmDashboard() {
   // Session & Clients State
@@ -54,7 +73,7 @@ export default function AuditFirmDashboard() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showKeyDrawer, setShowKeyDrawer] = useState(false);
 
-  // Live API Keys state
+  // API Keys state
   const [apiKeys, setApiKeys] = useState<APIKeysConfig>({
     anthropicApiKey: '',
     geminiApiKey: '',
@@ -87,7 +106,7 @@ export default function AuditFirmDashboard() {
       // Update client stage in state
       setClients(prev => prev.map(c => c.id === targetClient.id ? { ...c, auditResult: res, stage: res.stage } : c));
     } catch (err: any) {
-      setErrorMessage(err.message || 'Audit execution failed');
+      setErrorMessage(err.message || 'Audit fieldwork execution failed');
     } finally {
       setIsRunning(false);
     }
@@ -155,7 +174,7 @@ export default function AuditFirmDashboard() {
   const handleExportHTML = () => {
     if (!auditData) return;
     const htmlContent = exportWorkingPaperHTML(auditData);
-    downloadFile(htmlContent, `FinDit_Audit_Working_Papers_${auditData.engagementId}.html`, 'text/html');
+    downloadFile(htmlContent, `Statutory_Audit_Working_Papers_${auditData.engagementId}.html`, 'text/html');
   };
 
   const handleAddDocumentToClient = (newDoc: DocumentRecord) => {
@@ -171,7 +190,6 @@ export default function AuditFirmDashboard() {
       ...auditData,
       pbcRequests: updatedPBCs
     });
-    // Re-run engine
     handleRunClientAudit(activeClient);
   };
 
@@ -203,7 +221,7 @@ export default function AuditFirmDashboard() {
                 <p className="text-xs text-slate-400 mt-1 flex items-center gap-3">
                   <span>Licensed Partner: <strong>{firmSession.partnerName}</strong></span>
                   <span>•</span>
-                  <span>License ID: <strong className="text-blue-400">{firmSession.licenseId}</strong></span>
+                  <span>ICAP CA License ID: <strong className="text-blue-400">{firmSession.licenseId}</strong></span>
                 </p>
               </div>
             </div>
@@ -214,7 +232,7 @@ export default function AuditFirmDashboard() {
                 className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all"
               >
                 <Key className="w-4 h-4 text-amber-400" />
-                Live LLM API Keys
+                Audit Model Credentials
               </button>
 
               <button
@@ -231,41 +249,41 @@ export default function AuditFirmDashboard() {
             <div className="bg-slate-900 text-white rounded-xl p-5 border border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold flex items-center gap-2 text-amber-400">
-                  <Key className="w-4 h-4" /> Live LLM Provider API Keys (Optional)
+                  <Key className="w-4 h-4" /> Standards Processing Credentials (Optional)
                 </h3>
-                <span className="text-xs text-slate-400">When omitted, FinDit executes built-in statutory reasoning engines.</span>
+                <span className="text-xs text-slate-400">When omitted, FinDit executes built-in statutory ISA audit reasoning procedures.</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Anthropic Claude API Key (Sonnet)</label>
+                  <label className="block text-xs text-slate-400 mb-1">Professional Judgment Module API Key</label>
                   <input
                     type="password"
                     value={apiKeys.anthropicApiKey}
                     onChange={e => setApiKeys({ ...apiKeys, anthropicApiKey: e.target.value })}
-                    placeholder="sk-ant-..."
+                    placeholder="Key..."
                     className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Google Gemini API Key (1.5 Pro)</label>
+                  <label className="block text-xs text-slate-400 mb-1">Bulk Numeric Analytics API Key</label>
                   <input
                     type="password"
                     value={apiKeys.geminiApiKey}
                     onChange={e => setApiKeys({ ...apiKeys, geminiApiKey: e.target.value })}
-                    placeholder="AIzaSy..."
+                    placeholder="Key..."
                     className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Moonshot Kimi API Key</label>
+                  <label className="block text-xs text-slate-400 mb-1">PBC Document Classification API Key</label>
                   <input
                     type="password"
                     value={apiKeys.kimiApiKey}
                     onChange={e => setApiKeys({ ...apiKeys, kimiApiKey: e.target.value })}
-                    placeholder="sk-..."
+                    placeholder="Key..."
                     className="w-full bg-slate-800 border border-slate-700 rounded px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500"
                   />
                 </div>
@@ -277,9 +295,9 @@ export default function AuditFirmDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-slate-500">Onboarded Clients</p>
+                <p className="text-xs font-semibold text-slate-500">Audit Client Engagements</p>
                 <p className="text-2xl font-bold text-slate-900 mt-1">{clients.length}</p>
-                <p className="text-xs text-blue-600 font-medium mt-0.5">Multi-Tenant Engagements</p>
+                <p className="text-xs text-blue-600 font-medium mt-0.5">Statutory & Review Engagements</p>
               </div>
               <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                 <Building2 className="w-6 h-6" />
@@ -292,7 +310,7 @@ export default function AuditFirmDashboard() {
                 <p className="text-2xl font-bold text-slate-900 mt-1">
                   {clients.filter(c => c.stage === 'FIELDWORK' || c.stage === 'PLANNING').length}
                 </p>
-                <p className="text-xs text-emerald-600 font-medium mt-0.5">Automated Fieldwork ~88%</p>
+                <p className="text-xs text-emerald-600 font-medium mt-0.5">Statutory Fieldwork ~88%</p>
               </div>
               <div className="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <Cpu className="w-6 h-6" />
@@ -305,7 +323,7 @@ export default function AuditFirmDashboard() {
                 <p className="text-2xl font-bold text-slate-900 mt-1">
                   {clients.filter(c => c.auditResult?.reportPack.status !== 'CA_APPROVED').length}
                 </p>
-                <p className="text-xs text-amber-600 font-medium mt-0.5">Human Gate Active</p>
+                <p className="text-xs text-amber-600 font-medium mt-0.5">Licensed CA Authority Active</p>
               </div>
               <div className="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
                 <Lock className="w-6 h-6" />
@@ -327,8 +345,8 @@ export default function AuditFirmDashboard() {
           {/* Client Companies Section Header & Search */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Onboarded Client Companies ({clients.length})</h3>
-              <p className="text-xs text-slate-500">Select a company workspace to inspect documents, review findings, or perform CA sign-off.</p>
+              <h3 className="text-lg font-bold text-slate-900">Audit Client Engagements ({clients.length})</h3>
+              <p className="text-xs text-slate-500">Select a client company workspace to inspect records, review findings, or execute formal CA sign-off.</p>
             </div>
 
             <div className="relative max-w-xs w-full">
@@ -337,7 +355,7 @@ export default function AuditFirmDashboard() {
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search clients or CUIN..."
+                placeholder="Search client name or CUIN..."
                 className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -364,11 +382,11 @@ export default function AuditFirmDashboard() {
                       <strong className="text-slate-800">{client.engagementType}</strong>
                     </div>
                     <div className="flex justify-between">
-                      <span>Industry Overlay:</span>
+                      <span>Industry Module:</span>
                       <strong className="text-slate-800">{client.industryOverlay}</strong>
                     </div>
                     <div className="flex justify-between">
-                      <span>Onboarded Documents:</span>
+                      <span>Client Vault Documents:</span>
                       <strong className="text-blue-600 font-bold">{client.documents.length} Records</strong>
                     </div>
                   </div>
@@ -408,7 +426,7 @@ export default function AuditFirmDashboard() {
                 </span>
               </div>
               <p className="text-slate-500 text-sm mt-1">
-                Audit Director State: <span className="font-semibold text-blue-600">{auditData?.stage || 'FIELDWORK'}</span> • Registration: {activeClient?.registrationNo}
+                Engagement Audit Stage: <span className="font-semibold text-blue-600">{auditData?.stage || 'FIELDWORK'}</span> • CUIN Registration: {activeClient?.registrationNo}
               </p>
             </div>
 
@@ -419,7 +437,7 @@ export default function AuditFirmDashboard() {
                 className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm transition-all"
               >
                 <Zap className={`w-4 h-4 ${isRunning ? 'animate-spin' : ''}`} />
-                {isRunning ? 'Running Fieldwork...' : 'Re-Run Multi-Agent Engine'}
+                {isRunning ? 'Executing Procedures...' : 'Execute Statutory Fieldwork'}
               </button>
             </div>
           </div>
@@ -429,7 +447,7 @@ export default function AuditFirmDashboard() {
             <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm">
-                <strong className="font-semibold">System Constraint Triggered: </strong> {errorMessage}
+                <strong className="font-semibold">Statutory Constraint Triggered: </strong> {errorMessage}
               </div>
             </div>
           )}
@@ -473,7 +491,7 @@ export default function AuditFirmDashboard() {
 
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-slate-500">Report Status</p>
+                <p className="text-xs font-semibold text-slate-500">Audit Working Paper Status</p>
                 <div className="mt-1">
                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
                     auditData?.reportPack.status === 'CA_APPROVED' 
@@ -502,7 +520,7 @@ export default function AuditFirmDashboard() {
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              <Cpu className="w-4 h-4" /> Agent Fieldwork & Risk Register ({auditData?.findings.length || 0})
+              <Cpu className="w-4 h-4" /> Statutory Fieldwork & Risk Register ({auditData?.findings.length || 0})
             </button>
 
             <button
@@ -513,7 +531,7 @@ export default function AuditFirmDashboard() {
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              <FileSpreadsheet className="w-4 h-4" /> Document Vault & Missing Records ({auditData?.pbcRequests.filter(p=>p.status==='PENDING').length || 0})
+              <FileSpreadsheet className="w-4 h-4" /> Document Vault & Missing Evidence Prompts ({auditData?.pbcRequests.filter(p=>p.status==='PENDING').length || 0})
             </button>
 
             <button
@@ -535,7 +553,7 @@ export default function AuditFirmDashboard() {
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              <FileText className="w-4 h-4" /> Report Drafts & Exports
+              <FileText className="w-4 h-4" /> Report Drafts & Working Papers
             </button>
 
             <button
@@ -546,7 +564,7 @@ export default function AuditFirmDashboard() {
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
-              <BarChart3 className="w-4 h-4" /> Multi-LLM Router Log ({llmLogs.length})
+              <BarChart3 className="w-4 h-4" /> Methodology & Standards Audit Trail ({llmLogs.length})
             </button>
           </div>
 
@@ -555,7 +573,7 @@ export default function AuditFirmDashboard() {
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <Cpu className="w-5 h-5 text-blue-600" /> Specialist Agent Findings & Risk Register
+                  <Cpu className="w-5 h-5 text-blue-600" /> Statutory Fieldwork Findings & Risk Register
                 </h3>
 
                 <div className="space-y-4">
@@ -573,13 +591,13 @@ export default function AuditFirmDashboard() {
                               {finding.auditArea}
                             </span>
                             <span className="text-xs text-slate-400">
-                              Source: {finding.agentSource}
+                              Audit Procedure: {finding.agentSource}
                             </span>
                           </div>
                           <p className="text-sm font-medium text-slate-900 mt-2">{finding.description}</p>
 
                           <div className="flex items-center gap-4 text-xs text-slate-500 pt-2">
-                            <span>Evidence Refs: {finding.evidenceRefs.join(', ') || 'None'}</span>
+                            <span>Working Paper Refs: {finding.evidenceRefs.join(', ') || 'None'}</span>
                             <span>•</span>
                             <span>Status: <strong className="text-slate-700">{finding.status}</strong></span>
                           </div>
@@ -770,29 +788,32 @@ export default function AuditFirmDashboard() {
             </div>
           )}
 
-          {/* Tab 5: Multi-LLM Logs */}
+          {/* Tab 5: Audit Standards & Methodology Log */}
           {activeTab === 'llm' && (
             <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-blue-600" /> Multi-LLM Routing Audit Log
+                <BarChart3 className="w-5 h-5 text-blue-600" /> Methodology & Standards Audit Trail
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {Object.entries(DEFAULT_ROUTES).map(([key, route]) => (
-                  <div key={key} className="border border-slate-200 rounded-lg p-3 bg-slate-50 text-xs">
-                    <span className="font-bold text-slate-800 block">{key}</span>
-                    <span className="text-slate-600 block mt-0.5">Primary: <strong className="text-blue-600">{route.primaryModel}</strong> | Fallback: {route.fallbackModel}</span>
-                    <span className="text-slate-400 block mt-0.5">{route.description}</span>
-                  </div>
-                ))}
+                {Object.entries(DEFAULT_ROUTES).map(([key, route]) => {
+                  const mapped = PROCEDURE_TITLE_MAP[key] || { title: key, engine: route.description };
+                  return (
+                    <div key={key} className="border border-slate-200 rounded-lg p-3 bg-slate-50 text-xs">
+                      <span className="font-bold text-slate-800 block">{mapped.title}</span>
+                      <span className="text-slate-600 block mt-0.5">Procedure Engine: <strong className="text-blue-600">{mapped.engine}</strong></span>
+                      <span className="text-slate-400 block mt-0.5">{route.description}</span>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="space-y-2 font-mono text-xs">
                 {llmLogs.map(log => (
                   <div key={log.id} className="border border-slate-200 rounded p-2.5 bg-slate-900 text-slate-200">
                     <div className="flex items-center justify-between text-blue-400">
-                      <span>[{log.createdAt.substring(11, 19)}] Task: {log.taskType}</span>
-                      <span className="text-emerald-400">Model: {log.modelUsed}</span>
+                      <span>[{log.createdAt.substring(11, 19)}] Procedure: {PROCEDURE_TITLE_MAP[log.taskType]?.title || log.taskType}</span>
+                      <span className="text-emerald-400">Engine: Active Standards Module</span>
                     </div>
                     <p className="text-slate-300 mt-1">{log.outputSummary}</p>
                   </div>
