@@ -8,6 +8,13 @@ export type EngagementStage =
   | 'REPORTING'
   | 'CLOSED';
 
+export interface StatutoryReference {
+  standardId: string; // e.g. "ISA 240.32", "IFRS 15.110", "Companies Act 2017 Sec 227"
+  title: string;
+  officialClauseText: string;
+  governingBody: 'IFAC / IAASB (ISA)' | 'IASB (IFRS)' | 'ICAP Code of Ethics' | 'Corporate Law / Companies Act';
+}
+
 export interface AuditFinding {
   id: string;
   engagementId: string;
@@ -19,6 +26,14 @@ export interface AuditFinding {
   status: AuditStatus;
   overrideReason?: string;
   createdAt: string;
+  // Detailed Statutory Standards & Bylaws References
+  statutoryReferences: StatutoryReference[];
+  rootCauseAnalysis: string;
+  mandatoryRemediation: string;
+  isa500EvidenceScore?: {
+    weightScore: number;
+    description: string;
+  };
 }
 
 export interface ReviewItem {

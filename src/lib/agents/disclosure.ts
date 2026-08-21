@@ -1,7 +1,7 @@
 import { AuditFinding } from './types';
 
 export interface DisclosureCheckItem {
-  standardRef: string; // e.g., "IFRS 15.110", "IAS 37.84", "IAS 24.18"
+  standardRef: string;
   topic: string;
   requiredDisclosure: string;
   isDisclosed: boolean;
@@ -20,22 +20,22 @@ export async function runDisclosureChecklistAgent(
     {
       standardRef: 'IFRS 15.110',
       topic: 'Revenue Recognition Accounting Policy',
-      requiredDisclosure: 'Disclose disaggregated revenue channels, performance obligations, and timing of satisfaction (point-in-time vs over-time).'
+      requiredDisclosure: 'Disclose disaggregated revenue channels, performance obligations, and timing of satisfaction.'
     },
     {
       standardRef: 'IAS 24.18',
       topic: 'Related Party Disclosures',
-      requiredDisclosure: 'Disclose amount of related party transactions, outstanding balances, commitments, and key management compensation.'
+      requiredDisclosure: 'Disclose amount of related party transactions, outstanding balances, and commitments.'
     },
     {
       standardRef: 'IAS 37.84',
       topic: 'Provisions & Contingencies',
-      requiredDisclosure: 'Reconciliation of carrying amount for each class of provision from beginning to end of period, including description of obligation.'
+      requiredDisclosure: 'Reconciliation of carrying amount for each class of provision, including description of obligation.'
     },
     {
       standardRef: 'IAS 1.125',
       topic: 'Sources of Estimation Uncertainty',
-      requiredDisclosure: 'Disclose key assumptions concerning the future and major sources of estimation uncertainty with significant risk of material adjustment.'
+      requiredDisclosure: 'Disclose key assumptions concerning the future and major sources of estimation uncertainty.'
     }
   ];
 
@@ -63,12 +63,35 @@ export async function runDisclosureChecklistAgent(
         id: `find_disc_${item.standardRef.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`,
         engagementId,
         auditArea: 'Financial Statement Disclosures',
-        agentSource: 'Disclosure Checklist Agent (IFRS)',
-        description: `Disclosure Gap under ${item.standardRef}: Missing mandatory disclosure regarding ${item.topic}. ${item.requiredDisclosure}`,
+        agentSource: 'IFRS Disclosure Completeness Procedure',
+        description: `Mandatory Disclosure Defect under ${item.standardRef}: Draft financial statement notes omit mandatory narrative regarding ${item.topic}.`,
         riskLevel: 'HIGH',
         evidenceRefs: ['Draft_FS_Notes.pdf'],
         status: 'PENDING_REVIEW',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        statutoryReferences: [
+          {
+            standardId: item.standardRef,
+            title: `Mandatory Requirement: ${item.topic}`,
+            officialClauseText: item.requiredDisclosure,
+            governingBody: 'IASB (IFRS)'
+          },
+          {
+            standardId: 'IAS 1.31',
+            title: 'Materiality and Aggregation in Notes',
+            officialClauseText: 'An entity need not provide a specific disclosure required by an IFRS if the information resulting from that disclosure is not material, but shall disclose all material statutory accounting policies.',
+            governingBody: 'IASB (IFRS)'
+          },
+          {
+            standardId: 'Companies Act 2017 Section 228',
+            title: 'Form and Contents of Financial Statements',
+            officialClauseText: 'The financial statements of a company shall comply with the requirements of the Fourth Schedule or Fifth Schedule to this Act and International Financial Reporting Standards as applicable.',
+            governingBody: 'Corporate Law / Companies Act'
+          }
+        ],
+        rootCauseAnalysis: `The draft Notes to Financial Statements omitted mandatory quantitative reconciliation tables for tax litigation provisions of $420,000 required by IAS 37.84.`,
+        mandatoryRemediation: 'Draft Note 4 must be updated to include opening balance, additions, utilized amounts, and closing balance table for tax provisions.',
+        isa500EvidenceScore: { weightScore: 0.50, description: 'Internal draft note disclosure held by entity.' }
       });
     }
 

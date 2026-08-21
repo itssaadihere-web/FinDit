@@ -6,12 +6,14 @@ import { FirmAuthScreen } from '@/components/FirmAuthScreen';
 import { INITIAL_CLIENTS, ClientCompany, DocumentRecord } from '@/lib/store/clients';
 import { OnboardingModal } from '@/components/OnboardingModal';
 import { DocumentVault } from '@/components/DocumentVault';
+import { FindingDetailModal } from '@/components/FindingDetailModal';
 import { executeFullAuditWorkflow, AuditExecutionResult } from '@/lib/agents/director';
 import { SAMPLE_DRAFT_NOTES } from '@/lib/intake/templates';
 import { approveFinding, overrideFinding, signOffAuditReport } from '@/lib/review/actions';
 import { getLLMLogs, LLMLogEntry } from '@/lib/llm/logger';
 import { DEFAULT_ROUTES, APIKeysConfig } from '@/lib/llm/router';
 import { exportWorkingPaperHTML, downloadFile } from '@/lib/export/exporter';
+import { AuditFinding } from '@/lib/agents/types';
 import { 
   ShieldAlert, 
   CheckCircle2, 
@@ -33,7 +35,8 @@ import {
   Search,
   ArrowLeft,
   Briefcase,
-  LogOut
+  LogOut,
+  BookOpen
 } from 'lucide-react';
 
 const PROCEDURE_TITLE_MAP: Record<string, { title: string; engine: string }> = {
@@ -73,6 +76,7 @@ export default function AuditFirmPortalPage() {
   const [overrideReasonInput, setOverrideReasonInput] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showKeyDrawer, setShowKeyDrawer] = useState(false);
+  const [inspectFinding, setInspectFinding] = useState<AuditFinding | null>(null);
 
   // API Keys state
   const [apiKeys, setApiKeys] = useState<APIKeysConfig>({
@@ -277,6 +281,12 @@ export default function AuditFirmPortalPage() {
 
   return (
     <div className="space-y-6">
+      {/* Finding Detail & Statutory References Modal */}
+      <FindingDetailModal
+        finding={inspectFinding}
+        onClose={() => setInspectFinding(null)}
+      />
+
       {/* Onboarding Modal */}
       <OnboardingModal
         isOpen={isOnboardingOpen}
@@ -663,7 +673,7 @@ export default function AuditFirmPortalPage() {
 
                 <div className="space-y-4">
                   {auditData?.findings.map(finding => (
-                    <div key={finding.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50/50 hover:bg-white transition-all">
+                    <div key={finding.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50/50 hover:bg-white transition-all space-y-3">
                       <div className="flex items-start justify-between gap-4">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
@@ -681,7 +691,7 @@ export default function AuditFirmPortalPage() {
                           </div>
                           <p className="text-sm font-medium text-slate-900 mt-2">{finding.description}</p>
 
-                          <div className="flex items-center gap-4 text-xs text-slate-500 pt-2">
+                          <div className="flex items-center gap-4 text-xs text-slate-500 pt-1">
                             <span>Working Paper Refs: {finding.evidenceRefs.join(', ') || 'None'}</span>
                             <span>•</span>
                             <span>Status: <strong className="text-slate-700">{finding.status}</strong></span>
@@ -694,7 +704,7 @@ export default function AuditFirmPortalPage() {
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-shrink-0">
                           {finding.status === 'PENDING_REVIEW' && (
                             <>
                               <button
@@ -722,6 +732,16 @@ export default function AuditFirmPortalPage() {
                             </span>
                           )}
                         </div>
+                      </div>
+
+                      {/* Standards & Bylaws Detail Button */}
+                      <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between">
+                        <button
+                          onClick={() => setInspectFinding(finding)}
+                          className="text-xs text-cyan-800 hover:text-cyan-950 bg-cyan-50 hover:bg-cyan-100 font-bold px-3 py-1.5 rounded-lg border border-cyan-200 flex items-center gap-1.5 transition-all"
+                        >
+                          <BookOpen className="w-3.5 h-3.5" /> Inspect Standards, Laws & Bylaws Reference ({finding.statutoryReferences?.length || 0})
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -751,51 +771,67 @@ export default function AuditFirmPortalPage() {
               </p>
 
               <div className="space-y-3">
-                {auditData?.reviewQueue.map(item => (
-                  <div key={item.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-800">{item.auditArea}</span>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                          item.status === 'PENDING_REVIEW' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                        }`}>
-                          {item.status}
-                        </span>
+                {auditData?.reviewQueue.map(item => {
+                  const targetFinding = auditData.findings.find(f => f.id === item.findingId);
+                  return (
+                    <div key={item.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50 space-y-3">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-800">{item.auditArea}</span>
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                              item.status === 'PENDING_REVIEW' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                            }`}>
+                              {item.status}
+                            </span>
+                          </div>
+                          <p className="text-sm font-semibold text-slate-900">{item.escalationReason}</p>
+                          <p className="text-xs text-slate-600"><strong>Suggested Action:</strong> {item.suggestedAction}</p>
+
+                          {item.decisionNote && (
+                            <p className="text-xs bg-slate-200 text-slate-800 p-2 rounded mt-1">
+                              <strong>CA Decision Note:</strong> {item.decisionNote}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {item.status === 'PENDING_REVIEW' ? (
+                            <>
+                              <button
+                                onClick={() => handleApproveFinding(item.findingId!)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded font-semibold transition-all"
+                              >
+                                Approve Finding
+                              </button>
+                              <button
+                                onClick={() => setOverrideModalFindingId(item.findingId!)}
+                                className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1.5 rounded font-semibold transition-all"
+                              >
+                                Override Finding
+                              </button>
+                            </>
+                          ) : (
+                            <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                              <CheckCircle2 className="w-4 h-4" /> Reviewed by {item.reviewedBy || 'CA'}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <p className="text-sm font-semibold text-slate-900">{item.escalationReason}</p>
-                      <p className="text-xs text-slate-600"><strong>Suggested Action:</strong> {item.suggestedAction}</p>
 
-                      {item.decisionNote && (
-                        <p className="text-xs bg-slate-200 text-slate-800 p-2 rounded mt-1">
-                          <strong>CA Decision Note:</strong> {item.decisionNote}
-                        </p>
+                      {targetFinding && (
+                        <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
+                          <button
+                            onClick={() => setInspectFinding(targetFinding)}
+                            className="text-xs text-cyan-800 hover:text-cyan-950 bg-cyan-50 hover:bg-cyan-100 font-bold px-3 py-1.5 rounded-lg border border-cyan-200 flex items-center gap-1.5 transition-all"
+                          >
+                            <BookOpen className="w-3.5 h-3.5" /> Inspect Standards & Bylaws Governance
+                          </button>
+                        </div>
                       )}
                     </div>
-
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {item.status === 'PENDING_REVIEW' ? (
-                        <>
-                          <button
-                            onClick={() => handleApproveFinding(item.findingId!)}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded font-semibold transition-all"
-                          >
-                            Approve Finding
-                          </button>
-                          <button
-                            onClick={() => setOverrideModalFindingId(item.findingId!)}
-                            className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-3 py-1.5 rounded font-semibold transition-all"
-                          >
-                            Override Finding
-                          </button>
-                        </>
-                      ) : (
-                        <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                          <CheckCircle2 className="w-4 h-4" /> Reviewed by {item.reviewedBy || 'CA'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

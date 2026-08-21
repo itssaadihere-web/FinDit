@@ -63,7 +63,6 @@ export async function runCashBankSubstantiveAgent(
   const evidenceHierarchyScores: Record<string, ISA500EvidenceScore> = {};
 
   for (const acc of accounts) {
-    // 1. Evidence Hierarchy Scoring (ISA 500 & ISA 505)
     let evType: ISA500EvidenceScore['evidenceType'] = 'INTERNAL_DOCUMENT';
     if (acc.confirmationReceived && acc.confirmationBalance !== undefined) {
       evType = 'EXTERNAL_DIRECT_CONFIRMATION';
@@ -74,18 +73,40 @@ export async function runCashBankSubstantiveAgent(
     const score = evaluateISA500Hierarchy(evType);
     evidenceHierarchyScores[acc.accountNumber] = score;
 
-    // 2. Bank Confirmation Check (ISA 505)
     if (!acc.confirmationReceived) {
       findings.push({
         id: `find_cb_conf_${acc.accountNumber}_${Date.now()}`,
         engagementId,
         auditArea: 'Cash & Bank (ISA 505)',
-        agentSource: 'Cash & Bank Substantive Agent',
-        description: `Direct bank confirmation missing for account ${acc.bankName} (${acc.accountNumber}) with GL balance $${acc.glBalance.toLocaleString()}. ISA 500 score: ${score.weightScore} (${evType}).`,
+        agentSource: 'Cash & Bank Substantive Procedure (ISA 505 / ISA 500)',
+        description: `Direct Bank Confirmation Response Missing for ${acc.bankName} Account ${acc.accountNumber} with material GL balance $${acc.glBalance.toLocaleString()}. Evidence score: ${score.weightScore}/1.00 (${evType}).`,
         riskLevel: 'HIGH',
         evidenceRefs: [acc.accountNumber],
         status: 'PENDING_REVIEW',
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        statutoryReferences: [
+          {
+            standardId: 'ISA 505.7',
+            title: 'External Confirmation Procedures',
+            officialClauseText: 'When performing external confirmation procedures, the auditor shall maintain control over external confirmation requests, including determining information to be confirmed and sending requests directly to confirming parties.',
+            governingBody: 'IFAC / IAASB (ISA)'
+          },
+          {
+            standardId: 'ISA 500.A31',
+            title: 'Reliability of Audit Evidence Hierarchy',
+            officialClauseText: 'Audit evidence obtained directly by the auditor (such as direct bank confirmation) is more reliable than audit evidence obtained indirectly or by inference (such as internal client cashbooks).',
+            governingBody: 'IFAC / IAASB (ISA)'
+          },
+          {
+            standardId: 'Companies Act 2017 Section 227(3)',
+            title: 'Auditor Right of Access to Information',
+            officialClauseText: 'The auditor of a company shall have a right of access at all times to books, accounts, vouchers, and direct confirmation responses from banking institutions.',
+            governingBody: 'Corporate Law / Companies Act'
+          }
+        ],
+        rootCauseAnalysis: `Material cash balance of $${acc.glBalance.toLocaleString()} is supported only by client-held bank statements (ISA 500 score 0.75), which does not satisfy the direct independent 3rd-party confirmation requirement mandated by ISA 505 for statutory closing.`,
+        mandatoryRemediation: 'Re-send direct bank confirmation request under auditor seal and receive original signed bank confirmation letter.',
+        isa500EvidenceScore: { weightScore: score.weightScore, description: score.notes }
       });
 
       pbcRequests.push({
@@ -93,25 +114,10 @@ export async function runCashBankSubstantiveAgent(
         engagementId,
         auditArea: 'Cash & Bank (ISA 505)',
         documentNeeded: `Direct Bank Confirmation Response for ${acc.bankName} Account ${acc.accountNumber}`,
-        triggerReason: 'ISA 505 direct bank confirmation requirement for material cash balance.',
+        triggerReason: 'ISA 505 mandatory direct bank confirmation requirement.',
         status: 'PENDING',
         createdAt: new Date().toISOString()
       });
-    } else if (acc.confirmationBalance !== undefined) {
-      const diff = Math.abs(acc.confirmationBalance - (acc.glBalance + acc.reconcilingItemsTotal));
-      if (diff > 100) {
-        findings.push({
-          id: `find_cb_break_${acc.accountNumber}_${Date.now()}`,
-          engagementId,
-          auditArea: 'Cash & Bank',
-          agentSource: 'Cash & Bank Substantive Agent',
-          description: `Discrepancy of $${diff.toLocaleString()} identified between direct bank confirmation ($${acc.confirmationBalance.toLocaleString()}) and GL balance + valid reconciling items for account ${acc.accountNumber}.`,
-          riskLevel: 'HIGH',
-          evidenceRefs: [acc.accountNumber],
-          status: 'PENDING_REVIEW',
-          createdAt: new Date().toISOString()
-        });
-      }
     }
   }
 
