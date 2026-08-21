@@ -7,7 +7,16 @@ export interface AuditFirmSession {
   isLoggedIn: boolean;
 }
 
-export const DEFAULT_FIRM_SESSION: AuditFirmSession = {
+export const INITIAL_UNAUTHENTICATED_SESSION: AuditFirmSession = {
+  firmId: "",
+  firmName: "",
+  licenseId: "",
+  partnerName: "",
+  email: "",
+  isLoggedIn: false
+};
+
+export const DEMO_FIRM_SESSION: AuditFirmSession = {
   firmId: "firm_saad_994",
   firmName: "Saad & Co. Chartered Accountants",
   licenseId: "ICAP-CA-99412",

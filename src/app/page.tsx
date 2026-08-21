@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { DEFAULT_FIRM_SESSION, AuditFirmSession } from '@/lib/auth/context';
+import React, { useState } from 'react';
+import { AuditFirmSession, INITIAL_UNAUTHENTICATED_SESSION, DEMO_FIRM_SESSION } from '@/lib/auth/context';
+import { FirmAuthScreen } from '@/components/FirmAuthScreen';
 import { INITIAL_CLIENTS, ClientCompany, DocumentRecord } from '@/lib/store/clients';
 import { OnboardingModal } from '@/components/OnboardingModal';
 import { DocumentVault } from '@/components/DocumentVault';
 import { executeFullAuditWorkflow, AuditExecutionResult } from '@/lib/agents/director';
-import { parseTrialBalanceCSV, parseGeneralLedgerCSV, parseBankAccountsCSV } from '@/lib/intake/parser';
-import { SAMPLE_TRIAL_BALANCE_CSV, SAMPLE_GENERAL_LEDGER_CSV, SAMPLE_BANK_ACCOUNTS_CSV, SAMPLE_DRAFT_NOTES } from '@/lib/intake/templates';
+import { SAMPLE_DRAFT_NOTES } from '@/lib/intake/templates';
 import { approveFinding, overrideFinding, signOffAuditReport } from '@/lib/review/actions';
 import { getLLMLogs, LLMLogEntry } from '@/lib/llm/logger';
 import { DEFAULT_ROUTES, APIKeysConfig } from '@/lib/llm/router';
@@ -32,10 +32,10 @@ import {
   Plus,
   Search,
   ArrowLeft,
-  Briefcase
+  Briefcase,
+  LogOut
 } from 'lucide-react';
 
-// CA Terminology Mapping for Audit Trail Task Types
 const PROCEDURE_TITLE_MAP: Record<string, { title: string; engine: string }> = {
   JUDGMENT_STANDARDS_RISK: {
     title: 'Standards & Risk Judgment (ISA 300 / 315 / 320)',
@@ -55,15 +55,15 @@ const PROCEDURE_TITLE_MAP: Record<string, { title: string; engine: string }> = {
   }
 };
 
-export default function AuditFirmDashboard() {
-  // Session & Clients State
-  const [firmSession, setFirmSession] = useState<AuditFirmSession>(DEFAULT_FIRM_SESSION);
+export default function AuditFirmPortalPage() {
+  // Firm Auth Session State - Defaults to Login Screen requirement
+  const [firmSession, setFirmSession] = useState<AuditFirmSession>(INITIAL_UNAUTHENTICATED_SESSION);
   const [clients, setClients] = useState<ClientCompany[]>(INITIAL_CLIENTS);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Active Client Audit Workspace State
+  // Active Client Workspace State
   const [activeTab, setActiveTab] = useState<'agents' | 'vault' | 'review' | 'reports' | 'llm'>('agents');
   const [auditData, setAuditData] = useState<AuditExecutionResult | null>(null);
   const [llmLogs, setLlmLogs] = useState<LLMLogEntry[]>([]);
@@ -81,6 +81,17 @@ export default function AuditFirmDashboard() {
   });
 
   const activeClient = clients.find(c => c.id === selectedClientId) || null;
+
+  // 1. If not logged in, render Chartered Accountancy Firm Login / Signup Screen
+  if (!firmSession.isLoggedIn) {
+    return (
+      <FirmAuthScreen
+        onLoginSuccess={(session) => {
+          setFirmSession(session);
+        }}
+      />
+    );
+  }
 
   // Run audit engine for selected client
   const handleRunClientAudit = async (targetClient: ClientCompany) => {
@@ -103,7 +114,6 @@ export default function AuditFirmDashboard() {
       setAuditData(res);
       setLlmLogs(getLLMLogs(targetClient.id));
 
-      // Update client stage in state
       setClients(prev => prev.map(c => c.id === targetClient.id ? { ...c, auditResult: res, stage: res.stage } : c));
     } catch (err: any) {
       setErrorMessage(err.message || 'Audit fieldwork execution failed');
@@ -193,6 +203,11 @@ export default function AuditFirmDashboard() {
     handleRunClientAudit(activeClient);
   };
 
+  const handleFirmSignOut = () => {
+    setFirmSession(INITIAL_UNAUTHENTICATED_SESSION);
+    setSelectedClientId(null);
+  };
+
   const filteredClients = clients.filter(c => 
     c.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.registrationNo.toLowerCase().includes(searchQuery.toLowerCase())
@@ -240,6 +255,14 @@ export default function AuditFirmDashboard() {
                 className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all"
               >
                 <Plus className="w-4 h-4" /> Onboard New Client Company
+              </button>
+
+              <button
+                onClick={handleFirmSignOut}
+                title="Sign Out Firm Session"
+                className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all"
+              >
+                <LogOut className="w-4 h-4" /> Sign Out
               </button>
             </div>
           </div>
