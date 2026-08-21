@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { AuditFirmSession } from '@/lib/auth/context';
-import { Building2, Lock, UserCheck, ShieldCheck, ArrowRight, Award, CheckCircle2 } from 'lucide-react';
+import { Lock, ArrowRight, Award, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 interface FirmAuthScreenProps {
   onLoginSuccess: (session: AuditFirmSession) => void;
@@ -70,24 +70,27 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
   return (
     <div className="min-h-[85vh] flex items-center justify-center py-6 px-4">
       <div className="max-w-md w-full space-y-6">
-        {/* Portal Branding Header */}
-        <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-2xl mx-auto shadow-xl shadow-blue-600/30">
-            FD
+        {/* Brand Logo Header */}
+        <div className="text-center space-y-3">
+          <div className="bg-white p-3 rounded-2xl shadow-xl border border-cyan-500/20 max-w-[240px] mx-auto">
+            <img 
+              src="/logo.jpg" 
+              alt="FinDit AI-Based Financial Audit Software" 
+              className="w-full h-auto rounded-lg"
+            />
           </div>
-          <h2 className="text-2xl font-black tracking-tight text-slate-900">FinDit Audit Firm Portal</h2>
-          <p className="text-xs text-slate-500 font-medium">
+          <p className="text-xs text-slate-600 font-semibold tracking-wide">
             Statutory Audit & Decision-Support System • Licensed CA Sign-Off Authority
           </p>
         </div>
 
-        {/* Auth Mode Toggle Card */}
+        {/* Auth Card */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xl space-y-6">
           <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-600">
             <button
               onClick={() => setAuthMode('LOGIN')}
               className={`flex-1 py-2 rounded-lg transition-all ${
-                authMode === 'LOGIN' ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'
+                authMode === 'LOGIN' ? 'bg-gradient-to-r from-cyan-600 to-blue-700 text-white shadow-md' : 'hover:text-slate-900'
               }`}
             >
               Firm Sign In
@@ -95,7 +98,7 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
             <button
               onClick={() => setAuthMode('SIGNUP')}
               className={`flex-1 py-2 rounded-lg transition-all ${
-                authMode === 'SIGNUP' ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'
+                authMode === 'SIGNUP' ? 'bg-gradient-to-r from-cyan-600 to-blue-700 text-white shadow-md' : 'hover:text-slate-900'
               }`}
             >
               Register New CA Firm
@@ -113,7 +116,7 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
                   onChange={e => setLoginEmail(e.target.value)}
                   required
                   placeholder="partner@firm-ca.com"
-                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
@@ -125,7 +128,7 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
                   onChange={e => setLoginLicense(e.target.value)}
                   required
                   placeholder="ICAP-CA-99412"
-                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
@@ -137,13 +140,13 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
                   onChange={e => setLoginPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-all"
+                className="w-full bg-gradient-to-r from-cyan-600 via-sky-700 to-blue-800 hover:from-cyan-700 hover:to-blue-900 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-cyan-600/30 flex items-center justify-center gap-2 transition-all"
               >
                 <Lock className="w-4 h-4" /> Sign In to Audit Firm Workspace <ArrowRight className="w-4 h-4" />
               </button>
@@ -152,9 +155,9 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
                 <button
                   type="button"
                   onClick={handleDemoLogin}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-2.5 rounded-xl border border-slate-300 flex items-center justify-center gap-2 transition-all"
+                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2.5 rounded-xl border border-slate-300 flex items-center justify-center gap-2 transition-all"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Demo Login as Saad & Co. CA Firm
+                  <CheckCircle2 className="w-4 h-4 text-cyan-600" /> Demo Login as Saad & Co. CA Firm
                 </button>
               </div>
             </form>
@@ -171,7 +174,7 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
                   onChange={e => setSignupFirmName(e.target.value)}
                   required
                   placeholder="e.g. A.F. Ferguson & Co. Chartered Accountants"
-                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
@@ -183,7 +186,7 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
                   onChange={e => setSignupPartnerName(e.target.value)}
                   required
                   placeholder="e.g. Saad Ahmad, FCA"
-                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
@@ -195,7 +198,7 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
                     value={signupLicenseId}
                     onChange={e => setSignupLicenseId(e.target.value)}
                     placeholder="ICAP-CA-88120"
-                    className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-cyan-500"
                   />
                 </div>
 
@@ -207,7 +210,7 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
                     onChange={e => setSignupEmail(e.target.value)}
                     required
                     placeholder="partner@firm.com"
-                    className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-cyan-500"
                   />
                 </div>
               </div>
@@ -220,13 +223,13 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
                   onChange={e => setSignupPassword(e.target.value)}
                   required
                   placeholder="Create password..."
-                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all"
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all"
               >
                 <Award className="w-4 h-4" /> Register Firm & Enter Dashboard <ArrowRight className="w-4 h-4" />
               </button>
@@ -235,8 +238,8 @@ export function FirmAuthScreen({ onLoginSuccess }: FirmAuthScreenProps) {
         </div>
 
         {/* Regulatory Badge */}
-        <div className="bg-slate-100 border border-slate-200 rounded-xl p-3 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-blue-600" />
+        <div className="bg-slate-100 border border-slate-200 rounded-xl p-3 text-center text-xs text-slate-600 flex items-center justify-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-cyan-600" />
           <span>Compliant with ISA, IFRS & ICAP Statutory Audit Fieldwork Standards</span>
         </div>
       </div>

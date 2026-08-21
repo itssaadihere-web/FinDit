@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AuditFirmSession, INITIAL_UNAUTHENTICATED_SESSION, DEMO_FIRM_SESSION } from '@/lib/auth/context';
+import { AuditFirmSession, INITIAL_UNAUTHENTICATED_SESSION } from '@/lib/auth/context';
 import { FirmAuthScreen } from '@/components/FirmAuthScreen';
 import { INITIAL_CLIENTS, ClientCompany, DocumentRecord } from '@/lib/store/clients';
 import { OnboardingModal } from '@/components/OnboardingModal';
@@ -226,17 +226,17 @@ export default function AuditFirmPortalPage() {
       {!selectedClientId ? (
         <div className="space-y-6">
           {/* Audit Firm Header Banner */}
-          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl p-6 shadow-md border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white rounded-2xl p-6 shadow-xl border border-cyan-900/40 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl font-black shadow-lg border border-blue-400/30">
-                SC
+              <div className="bg-white p-1.5 rounded-2xl shadow-md border border-cyan-400/30">
+                <img src="/logo.jpg" alt="FinDit Logo" className="h-12 w-auto rounded-xl" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold tracking-tight">{firmSession.firmName}</h2>
-                <p className="text-xs text-slate-400 mt-1 flex items-center gap-3">
-                  <span>Licensed Partner: <strong>{firmSession.partnerName}</strong></span>
+                <h2 className="text-2xl font-black tracking-tight text-white">{firmSession.firmName}</h2>
+                <p className="text-xs text-cyan-200/70 mt-1 flex items-center gap-3">
+                  <span>Licensed Partner: <strong className="text-white">{firmSession.partnerName}</strong></span>
                   <span>•</span>
-                  <span>ICAP CA License ID: <strong className="text-blue-400">{firmSession.licenseId}</strong></span>
+                  <span>ICAP CA License ID: <strong className="text-cyan-400">{firmSession.licenseId}</strong></span>
                 </p>
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function AuditFirmPortalPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowKeyDrawer(!showKeyDrawer)}
-                className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all"
+                className="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
               >
                 <Key className="w-4 h-4 text-amber-400" />
                 Audit Model Credentials
@@ -252,7 +252,7 @@ export default function AuditFirmPortalPage() {
 
               <button
                 onClick={() => setIsOnboardingOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-600/30 transition-all"
+                className="bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-700 hover:to-blue-800 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-cyan-600/30 transition-all"
               >
                 <Plus className="w-4 h-4" /> Onboard New Client Company
               </button>
@@ -260,7 +260,7 @@ export default function AuditFirmPortalPage() {
               <button
                 onClick={handleFirmSignOut}
                 title="Sign Out Firm Session"
-                className="bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 text-red-300 px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all"
+                className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 px-3 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all"
               >
                 <LogOut className="w-4 h-4" /> Sign Out
               </button>
@@ -320,9 +320,9 @@ export default function AuditFirmPortalPage() {
               <div>
                 <p className="text-xs font-semibold text-slate-500">Audit Client Engagements</p>
                 <p className="text-2xl font-bold text-slate-900 mt-1">{clients.length}</p>
-                <p className="text-xs text-blue-600 font-medium mt-0.5">Statutory & Review Engagements</p>
+                <p className="text-xs text-cyan-700 font-medium mt-0.5">Statutory & Review Engagements</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-cyan-50 text-cyan-700 flex items-center justify-center">
                 <Building2 className="w-6 h-6" />
               </div>
             </div>
@@ -379,7 +379,7 @@ export default function AuditFirmPortalPage() {
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search client name or CUIN..."
-                className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-cyan-500"
               />
             </div>
           </div>
@@ -410,7 +410,7 @@ export default function AuditFirmPortalPage() {
                     </div>
                     <div className="flex justify-between">
                       <span>Client Vault Documents:</span>
-                      <strong className="text-blue-600 font-bold">{client.documents.length} Records</strong>
+                      <strong className="text-cyan-700 font-bold">{client.documents.length} Records</strong>
                     </div>
                   </div>
                 </div>
@@ -418,7 +418,7 @@ export default function AuditFirmPortalPage() {
                 <div className="pt-2">
                   <button
                     onClick={() => handleOpenClientWorkspace(client)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all"
+                    className="w-full bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-700 hover:to-blue-800 text-white text-xs font-bold py-2.5 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-all"
                   >
                     Open Client Audit Workspace
                   </button>
@@ -444,12 +444,12 @@ export default function AuditFirmPortalPage() {
                 <span className="bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-slate-200">
                   {activeClient?.auditPeriod}
                 </span>
-                <span className="bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-md border border-blue-200">
+                <span className="bg-cyan-50 text-cyan-800 text-xs font-bold px-2.5 py-1 rounded-md border border-cyan-200">
                   {activeClient?.engagementType}
                 </span>
               </div>
               <p className="text-slate-500 text-sm mt-1">
-                Engagement Audit Stage: <span className="font-semibold text-blue-600">{auditData?.stage || 'FIELDWORK'}</span> • CUIN Registration: {activeClient?.registrationNo}
+                Engagement Audit Stage: <span className="font-semibold text-cyan-700">{auditData?.stage || 'FIELDWORK'}</span> • CUIN Registration: {activeClient?.registrationNo}
               </p>
             </div>
 
@@ -457,7 +457,7 @@ export default function AuditFirmPortalPage() {
               <button
                 onClick={() => activeClient && handleRunClientAudit(activeClient)}
                 disabled={isRunning}
-                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm transition-all"
+                className="bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-700 hover:to-blue-800 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 shadow-sm transition-all"
               >
                 <Zap className={`w-4 h-4 ${isRunning ? 'animate-spin' : ''}`} />
                 {isRunning ? 'Executing Procedures...' : 'Execute Statutory Fieldwork'}
@@ -483,7 +483,7 @@ export default function AuditFirmPortalPage() {
                 <p className="text-2xl font-bold text-slate-900 mt-1">{auditData?.overallFieldworkProgress || 88}%</p>
                 <p className="text-xs text-emerald-600 font-medium mt-0.5">~85-90% statutory goal</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-cyan-50 text-cyan-700 flex items-center justify-center">
                 <Cpu className="w-6 h-6" />
               </div>
             </div>
@@ -539,7 +539,7 @@ export default function AuditFirmPortalPage() {
               onClick={() => setActiveTab('agents')}
               className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
                 activeTab === 'agents' 
-                  ? 'border-blue-600 text-blue-600' 
+                  ? 'border-cyan-600 text-cyan-700' 
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -550,7 +550,7 @@ export default function AuditFirmPortalPage() {
               onClick={() => setActiveTab('vault')}
               className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
                 activeTab === 'vault' 
-                  ? 'border-blue-600 text-blue-600' 
+                  ? 'border-cyan-600 text-cyan-700' 
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -561,7 +561,7 @@ export default function AuditFirmPortalPage() {
               onClick={() => setActiveTab('review')}
               className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
                 activeTab === 'review' 
-                  ? 'border-blue-600 text-blue-600' 
+                  ? 'border-cyan-600 text-cyan-700' 
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -572,7 +572,7 @@ export default function AuditFirmPortalPage() {
               onClick={() => setActiveTab('reports')}
               className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
                 activeTab === 'reports' 
-                  ? 'border-blue-600 text-blue-600' 
+                  ? 'border-cyan-600 text-cyan-700' 
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -583,7 +583,7 @@ export default function AuditFirmPortalPage() {
               onClick={() => setActiveTab('llm')}
               className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all ${
                 activeTab === 'llm' 
-                  ? 'border-blue-600 text-blue-600' 
+                  ? 'border-cyan-600 text-cyan-700' 
                   : 'border-transparent text-slate-500 hover:text-slate-800'
               }`}
             >
@@ -596,7 +596,7 @@ export default function AuditFirmPortalPage() {
             <div className="space-y-6">
               <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <Cpu className="w-5 h-5 text-blue-600" /> Statutory Fieldwork Findings & Risk Register
+                  <Cpu className="w-5 h-5 text-cyan-700" /> Statutory Fieldwork Findings & Risk Register
                 </h3>
 
                 <div className="space-y-4">
@@ -682,7 +682,7 @@ export default function AuditFirmPortalPage() {
           {activeTab === 'review' && (
             <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-blue-600" /> Central Review & Escalation Queue
+                <UserCheck className="w-5 h-5 text-cyan-700" /> Central Review & Escalation Queue
               </h3>
               <p className="text-xs text-slate-500">
                 Every judgment call, high-risk flag, or evidence quality shortfall is routed here for human CA action.
@@ -745,13 +745,13 @@ export default function AuditFirmPortalPage() {
                 <div className="flex items-center justify-between border-b border-slate-200 pb-4">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900">{auditData?.reportPack.auditSummaryReport.title}</h3>
-                    <p className="text-xs text-slate-500">Statutory Report Pack • Opinion Recommendation: <strong className="text-blue-600">{auditData?.reportPack.opinionRecommendation.type}</strong></p>
+                    <p className="text-xs text-slate-500">Statutory Report Pack • Opinion Recommendation: <strong className="text-cyan-700">{auditData?.reportPack.opinionRecommendation.type}</strong></p>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <button
                       onClick={handleExportHTML}
-                      className="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
+                      className="bg-slate-900 hover:bg-slate-950 text-white px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
                     >
                       <Download className="w-4 h-4" /> Export Working Papers (.HTML)
                     </button>
@@ -815,7 +815,7 @@ export default function AuditFirmPortalPage() {
           {activeTab === 'llm' && (
             <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-blue-600" /> Methodology & Standards Audit Trail
+                <BarChart3 className="w-5 h-5 text-cyan-700" /> Methodology & Standards Audit Trail
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -824,7 +824,7 @@ export default function AuditFirmPortalPage() {
                   return (
                     <div key={key} className="border border-slate-200 rounded-lg p-3 bg-slate-50 text-xs">
                       <span className="font-bold text-slate-800 block">{mapped.title}</span>
-                      <span className="text-slate-600 block mt-0.5">Procedure Engine: <strong className="text-blue-600">{mapped.engine}</strong></span>
+                      <span className="text-slate-600 block mt-0.5">Procedure Engine: <strong className="text-cyan-700">{mapped.engine}</strong></span>
                       <span className="text-slate-400 block mt-0.5">{route.description}</span>
                     </div>
                   );
