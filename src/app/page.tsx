@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuditFirmSession, INITIAL_UNAUTHENTICATED_SESSION } from '@/lib/auth/context';
 import { FirmAuthScreen } from '@/components/FirmAuthScreen';
 import { INITIAL_CLIENTS, ClientCompany, DocumentRecord } from '@/lib/store/clients';
@@ -56,8 +56,9 @@ const PROCEDURE_TITLE_MAP: Record<string, { title: string; engine: string }> = {
 };
 
 export default function AuditFirmPortalPage() {
-  // Firm Auth Session State - Defaults to Login Screen requirement
+  // Firm Auth Session State
   const [firmSession, setFirmSession] = useState<AuditFirmSession>(INITIAL_UNAUTHENTICATED_SESSION);
+  const [isLoadedFromStorage, setIsLoadedFromStorage] = useState(false);
   const [clients, setClients] = useState<ClientCompany[]>(INITIAL_CLIENTS);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
@@ -80,18 +81,33 @@ export default function AuditFirmPortalPage() {
     kimiApiKey: ''
   });
 
-  const activeClient = clients.find(c => c.id === selectedClientId) || null;
+  // Restore session & selected client view from localStorage on initial render
+  useEffect(() => {
+    try {
+      const savedSession = localStorage.getItem('findit_firm_session');
+      if (savedSession) {
+        const parsedSession: AuditFirmSession = JSON.parse(savedSession);
+        if (parsedSession && parsedSession.isLoggedIn) {
+          setFirmSession(parsedSession);
+        }
+      }
 
-  // 1. If not logged in, render Chartered Accountancy Firm Login / Signup Screen
-  if (!firmSession.isLoggedIn) {
-    return (
-      <FirmAuthScreen
-        onLoginSuccess={(session) => {
-          setFirmSession(session);
-        }}
-      />
-    );
-  }
+      const savedClientId = localStorage.getItem('findit_selected_client_id');
+      if (savedClientId) {
+        setSelectedClientId(savedClientId);
+        const targetClient = INITIAL_CLIENTS.find(c => c.id === savedClientId);
+        if (targetClient) {
+          handleRunClientAudit(targetClient);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to restore session from localStorage:', err);
+    } finally {
+      setIsLoadedFromStorage(true);
+    }
+  }, []);
+
+  const activeClient = clients.find(c => c.id === selectedClientId) || null;
 
   // Run audit engine for selected client
   const handleRunClientAudit = async (targetClient: ClientCompany) => {
@@ -122,10 +138,40 @@ export default function AuditFirmPortalPage() {
     }
   };
 
+  const handleLoginSuccess = (session: AuditFirmSession) => {
+    setFirmSession(session);
+    try {
+      localStorage.setItem('findit_firm_session', JSON.stringify(session));
+    } catch (err) {
+      console.warn('Failed to save firm session:', err);
+    }
+  };
+
   const handleOpenClientWorkspace = (client: ClientCompany) => {
     setSelectedClientId(client.id);
     setActiveTab('agents');
+    try {
+      localStorage.setItem('findit_selected_client_id', client.id);
+    } catch (err) {
+      console.warn('Failed to save selected client ID:', err);
+    }
     handleRunClientAudit(client);
+  };
+
+  const handleBackToDashboard = () => {
+    setSelectedClientId(null);
+    try {
+      localStorage.removeItem('findit_selected_client_id');
+    } catch (err) {}
+  };
+
+  const handleFirmSignOut = () => {
+    setFirmSession(INITIAL_UNAUTHENTICATED_SESSION);
+    setSelectedClientId(null);
+    try {
+      localStorage.removeItem('findit_firm_session');
+      localStorage.removeItem('findit_selected_client_id');
+    } catch (err) {}
   };
 
   const handleClientCreated = (newClient: ClientCompany) => {
@@ -203,15 +249,31 @@ export default function AuditFirmPortalPage() {
     handleRunClientAudit(activeClient);
   };
 
-  const handleFirmSignOut = () => {
-    setFirmSession(INITIAL_UNAUTHENTICATED_SESSION);
-    setSelectedClientId(null);
-  };
-
   const filteredClients = clients.filter(c => 
     c.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.registrationNo.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Avoid flash before reading localStorage
+  if (!isLoadedFromStorage) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-xs font-semibold text-slate-500">Restoring Audit Firm Session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 1. If not logged in, render Chartered Accountancy Firm Login / Signup Screen
+  if (!firmSession.isLoggedIn) {
+    return (
+      <FirmAuthScreen
+        onLoginSuccess={handleLoginSuccess}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -434,7 +496,7 @@ export default function AuditFirmPortalPage() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <button
-                onClick={() => setSelectedClientId(null)}
+                onClick={handleBackToDashboard}
                 className="text-xs text-slate-500 hover:text-slate-800 font-semibold flex items-center gap-1.5 mb-2"
               >
                 <ArrowLeft className="w-4 h-4" /> Back to Audit Firm Dashboard
