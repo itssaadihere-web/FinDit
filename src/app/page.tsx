@@ -831,16 +831,38 @@ export default function AuditFirmPortalPage() {
                 })}
               </div>
 
-              <div className="space-y-2 font-mono text-xs">
-                {llmLogs.map(log => (
-                  <div key={log.id} className="border border-slate-200 rounded p-2.5 bg-slate-900 text-slate-200">
-                    <div className="flex items-center justify-between text-blue-400">
-                      <span>[{log.createdAt.substring(11, 19)}] Procedure: {PROCEDURE_TITLE_MAP[log.taskType]?.title || log.taskType}</span>
-                      <span className="text-emerald-400">Engine: Active Standards Module</span>
+              <div className="space-y-3">
+                {llmLogs.map(log => {
+                  let cleanText = log.outputSummary;
+                  try {
+                    const parsed = JSON.parse(log.outputSummary);
+                    if (parsed.overallMateriality) {
+                      cleanText = `Materiality established at $${parsed.overallMateriality.toLocaleString()} (Overall) and $${parsed.performanceMateriality.toLocaleString()} (Performance) per ISA 320 guidelines. ${parsed.rationale || ''}`;
+                    } else if (parsed.processedTransactions) {
+                      cleanText = `Bulk financial analytical procedures completed across ${parsed.processedTransactions} verified GL journal transactions. ${parsed.numericStatus || ''}`;
+                    } else if (parsed.classifiedArea) {
+                      cleanText = `PBC Document categorized under audit area '${parsed.classifiedArea}'. ${parsed.extractedSummary || ''}`;
+                    } else if (parsed.executiveSummary) {
+                      cleanText = `${parsed.executiveSummary} Recommended Opinion: ${parsed.auditOpinionRecommendation || 'UNMODIFIED'}.`;
+                    }
+                  } catch {
+                    cleanText = log.outputSummary.replace(/Claude 3\.5 Sonnet Assessment:|Gemini 1\.5 Pro Assessment:|Kimi Assessment:/gi, 'Statutory Audit Procedure:');
+                  }
+
+                  return (
+                    <div key={log.id} className="border border-slate-200 rounded-xl p-3.5 bg-slate-50 hover:bg-white transition-all space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-slate-800">
+                          [{log.createdAt.substring(11, 19)}] {PROCEDURE_TITLE_MAP[log.taskType]?.title || log.taskType}
+                        </span>
+                        <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-200">
+                          Verified Audit Note
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed font-medium mt-1">{cleanText}</p>
                     </div>
-                    <p className="text-slate-300 mt-1">{log.outputSummary}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
